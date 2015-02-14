@@ -14,83 +14,82 @@ var axes = {
   x: d3.scale.linear().domain([0,100]).range([0,gameOptions.width]),
   y: d3.scale.linear().domain([0,100]).range([0,gameOptions.height])
 }
-var createEnemies = function() {
-  var enemyData = [];
-  for (var i = 0; i < gameOptions.nEnemies; i++) {
-    var enemy = {};
-    enemy.id = i;
-    enemy.x = Math.random() * gameOptions.width;
-    enemy.y = Math.random() * gameOptions.height;
-    enemyData.push(enemy);
-  }
 
-  return enemyData;
-};  
+var numEnemies = gameOptions.nEnemies
+var enemies =function(numEnemies){
+  var enemyArray = []
+  for (var i = 0; i < numEnemies; i++){
+    var single = {};
+      single.id = i;
+      single.x = Math.random() * gameOptions.width;
+      single.y = Math.random() * gameOptions.height;
+      enemyArray.push(single);
+    }
+  return enemyArray;
+}(numEnemies);  
+//debugger;
+
+var player = {
+
+  cx : gameOptions.width/2,
+  cy : gameOptions.height/2
+  
+}
+
+var dragCircle = d3.behavior.drag()
+    .on('drag', function (d, i) {
+    d.cx += d3.event.dx;
+    d.cy += d3.event.dy;
+    d3.select('circle.player').attr('cx', d.cx).attr('cy', d.cy);
+});
 
 var gameboard = d3.select('body').append('svg')
-        .attr('width', gameOptions.width)
-        .attr('height', gameOptions.height);
+                  .attr('width', gameOptions.width)
+                  .attr('height', gameOptions.height);
+                  
 
-var enemyPositions = createEnemies(); 
 
-var circles = gameboard.selectAll('circle')
-                .data(enemyPositions)
+//debugger;
+
+var player = gameboard.selectAll('circle')
+                .data([player])
                 .enter()
-                .append('circle');
+                .append('circle')
+                .attr("class", "player")
+                .attr("cx", function(d){return d.cx;})
+                .attr("cy", function(d){return d.cy;})
+                .attr('r', 10)
+                .call(dragCircle)
+                .style("fill", "red");
+//debugger;
 
 
-circles.attr("cx",function(d,i){return enemyPositions[i].x})
-        .attr("cy", function(d,i){return enemyPositions[i].y})
-        .attr("r", 5)
-        .style("fill", "black");
+var placeenemies = gameboard.selectAll('circle.update')
+                .data(enemies)
+                .enter()
+                .append('circle')
+                .attr("cx", function(d,i){return d.cx})
+                .attr("cy", function(d,i){return d.cy})
+                .attr("r", 5)
+                .style("fill", "black");
 
 
 
-// var circles = svg.selectAll('circle')
-//                 .data()
-//                 .enter()
-//                 .append('circle');
+var update = function(data) {
+
+  placeenemies.attr('class','update')
+            .transition().duration(2000)
+            .attr("cx", function(d){return d.x = Math.random() * gameOptions.width})
+            .attr("cy", function(d){return d.y = Math.random() * gameOptions.height});
+            
+};
+
+update(enemies);
+//debugger;
+setInterval(function(){update(enemies);}, 2000);
 
 
-// var alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
 
-// var width = 960,
-//     height = 500;
 
-// var svg = d3.select('body').append('svg')
-//         .attr('width', width)
-//         .attr('height', height)
-//         .append('g')
-//         .attr('transform', 'translate(32, ' + (height / 2) + ')');
 
-// function update(data) {
-//   var text = svg.selectAll('text').data(data);
 
-//   text.attr('class', 'enter');
-
-//   text.enter().append('text')
-//       .attr('class', 'enter')
-//       .attr('x', function(d, i) {return i * 32;})
-//       .attr('dy', '.35em');
-
-//   text.text(function(d) { return d; });
-
-//   text.exit().remove();
-// }
-
-// update(alphabet);
-
-// setInterval(function() {
-//   update(shuffle(alphabet)
-//     .slice(0, Math.floor(Math.random() * 26))
-//     .sort());
-// }, 1500);
-
-// function shuffle(array) {
-//   var m = array.length, t, i;
-//   while (m) {
-//     i = Math.floor(Math.random() * m--);
-//     t = array[m], array[m] = array[i], array[i] = t;
-//   }
-//   return array;
-// }
